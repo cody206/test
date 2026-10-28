@@ -1,0 +1,59 @@
+
+-- CC:Sable Monitor Diagnostic
+local monitor = peripheral.find("monitor")
+
+if not monitor then
+    print("Monitor not found!")
+    return
+end
+
+monitor.setTextScale(0.5)
+
+-- Redirect normal print output to the monitor
+local oldTerm = term.redirect(monitor)
+
+local function safeCall(name, fn)
+    write(name .. ": ")
+
+    if type(fn) ~= "function" then
+        print("Unavailable")
+        return
+    end
+
+    local ok, result = pcall(fn)
+
+    if ok then
+        print(textutils.serialize(result))
+    else
+        print("ERROR: " .. tostring(result))
+    end
+end
+
+while true do
+    monitor.clear()
+    monitor.setCursorPos(1, 1)
+
+    print("CC:SABLE DIAGNOSTICS")
+    print("====================")
+    print("Computer ID: " .. os.getComputerID())
+    print("Sable API: " .. type(sublevel))
+    print("")
+
+    if type(sublevel) == "table" then
+        safeCall("On sub-level", sublevel.isInPlotGrid)
+        safeCall("Ship name", sublevel.getName)
+        safeCall("Ship ID", sublevel.getUniqueId)
+        safeCall("Mass", sublevel.getMass)
+        safeCall("Logical pose", sublevel.getLogicalPose)
+        safeCall("Velocity", sublevel.getVelocity)
+        safeCall("Linear velocity", sublevel.getLinearVelocity)
+        safeCall("Angular velocity", sublevel.getAngularVelocity)
+    else
+        print("CC:Sable API not detected!")
+        print("Check mod installation.")
+    end
+
+    print("")
+    print("Refreshing every 2 seconds")
+    sleep(2)
+end
