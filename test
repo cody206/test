@@ -1,0 +1,25 @@
+-- sablecheck.lua
+if not sublevel then
+    print("ERROR: CC:Sable API not found")
+    return
+end
+
+if not sublevel.isInPlotGrid() then
+    print("ERROR: Computer is not on a Sable sub-level")
+    return
+end
+
+print("Ship: " .. sublevel.getName())
+print("Ship ID: " .. sublevel.getUniqueId())
+print("Mass: " .. tostring(sublevel.getMass()))
+
+while true do
+    local ok, pose = pcall(sublevel.getLogicalPose)
+    if ok then
+        print(textutils.serialize(pose))
+    else
+        print("Could not read ship pose: " .. tostring(pose))
+    end
+
+    sleep(1)
+end
