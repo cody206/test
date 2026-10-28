@@ -1,0 +1,53 @@
+
+-- relaytest.lua
+-- Interactive single-relay test.
+-- Start with all outputs OFF.
+
+local names = {"bottom", "right", "left"}
+local relays = {}
+
+for _, name in ipairs(names) do
+    if peripheral.getType(name) then
+        relays[name] = peripheral.wrap(name)
+    end
+end
+
+local function allOff()
+    for _, relay in pairs(relays) do
+        for _, side in ipairs({
+            "top", "bottom", "left",
+            "right", "front", "back"
+        }) do
+            pcall(relay.setOutput, side, false)
+        end
+    end
+end
+
+allOff()
+
+print("Relay test ready.")
+print("Commands: bottom, right, left, off, quit")
+print("Only one relay output will be enabled.")
+
+while true do
+    write("> ")
+    local command = read():lower()
+
+    allOff()
+
+    if command == "quit" then
+        break
+    elseif command == "off" then
+        print("All relay outputs OFF")
+    elseif relays[command] then
+        relays[command].setOutput("top", true)
+        print(command .. " relay TOP output ON for 2 seconds")
+        sleep(2)
+        allOff()
+        print("All outputs OFF")
+    else
+        print("Unknown relay. Use bottom, right, left, off, quit.")
+    end
+end
+
+allOff()
