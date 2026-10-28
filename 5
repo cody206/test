@@ -1,0 +1,75 @@
+
+-- relaycheck.lua
+-- Safe: reads relay information only.
+local monitor = peripheral.find("monitor")
+local oldTerm = term.current()
+
+if monitor then
+    monitor.setTextScale(0.5)
+    term.redirect(monitor)
+end
+
+local function inspect()
+    term.clear()
+    term.setCursorPos(1, 1)
+
+    print("CC:TWEAKED RELAY CHECK")
+    print("======================")
+    print("")
+
+    local names = peripheral.getNames()
+    local count = 0
+
+    for _, name in ipairs(names) do
+        local types = peripheral.getType(name)
+        local isRelay = false
+
+        if type(types) == "table" then
+            for _, kind in ipairs(types) do
+                if kind == "redstone_relay" then
+                    isRelay = true
+                end
+            end
+        elseif types == "redstone_relay" then
+            isRelay = true
+        end
+
+        if isRelay then
+            count = count + 1
+            print("Relay: " .. name)
+
+            local ok, wrapped =
+                pcall(peripheral.wrap, name)
+
+            if ok and wrapped then
+                for _, side in ipairs({
+                    "top", "bottom", "left",
+                    "right", "front", "back"
+                }) do
+                    local success, value =
+                        pcall(wrapped.getOutput, side)
+
+                    if success then
+                        print(" " .. side ..
+                            " output: " .. tostring(value))
+                    end
+                end
+            end
+
+            print("")
+        end
+    end
+
+    print("Relays found: " .. count)
+    print("Read-only test; no outputs changed.")
+end
+
+local ok, err = pcall(inspect)
+
+if monitor then
+    term.redirect(oldTerm)
+end
+
+if not ok then
+    print("Error: " .. tostring(err))
+end
