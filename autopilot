@@ -1,0 +1,87 @@
+-- CC:Sable relay autopilot starter
+-- Minecraft 1.21.1
+-- All outputs start OFF.
+
+local sides = {
+    forward = "front",
+    reverse = "back",
+    left    = "left",
+    right   = "right",
+    up      = "top",
+    down    = "bottom"
+}
+
+local function allOff()
+    for _, side in pairs(sides) do
+        redstone.setOutput(side, false)
+    end
+end
+
+local function setControl(name, enabled)
+    local side = sides[name]
+    if not side then
+        error("Unknown control: " .. tostring(name))
+    end
+    redstone.setOutput(side, enabled)
+end
+
+local function readTarget()
+    print("Destination X:")
+    local x = tonumber(read())
+    print("Destination Y:")
+    local y = tonumber(read())
+    print("Destination Z:")
+    local z = tonumber(read())
+
+    if not x or not y or not z then
+        error("Coordinates must be numbers")
+    end
+
+    return { x = x, y = y, z = z }
+end
+
+local function main()
+    allOff()
+
+    if not sublevel or not sublevel.isInPlotGrid() then
+        print("Ship computer not detected on a Sable sub-level.")
+        return
+    end
+
+    print("Ship: " .. sublevel.getName())
+    local target = readTarget()
+
+    print(("Target: %d, %d, %d"):format(
+        target.x, target.y, target.z
+    ))
+    print("Relay outputs are OFF.")
+    print("Test controls only in a clear area.")
+    print("Press Q or Ctrl+T to stop.")
+
+    while true do
+        write("Control (forward/reverse/left/right/up/down/off/quit): ")
+        local command = read():lower()
+
+        allOff()
+
+        if command == "quit" then
+            break
+        elseif command == "off" then
+            print("All outputs OFF")
+        elseif sides[command] then
+            setControl(command, true)
+            print(command .. " output ON")
+            sleep(0.5)
+            allOff()
+        else
+            print("Unknown command")
+        end
+    end
+end
+
+local ok, err = pcall(main)
+allOff()
+
+if not ok then
+    print("Stopped safely: " .. tostring(err))
+end
