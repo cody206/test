@@ -1,0 +1,60 @@
+
+local repo = "https://api.github.com/repos/datapeice/flightos/git/trees/main?recursive=1"
+local raw = "https://raw.githubusercontent.com/datapeice/flightos/main/"
+
+print("Downloading FlightOS file list...")
+local response, err = http.get(repo)
+if not response then
+    error("GitHub request failed: " .. tostring(err))
+end
+
+local data = textutils.unserializeJSON(response.readAll())
+response.close()
+
+if not data or not data.tree then
+    error("Could not read GitHub file list.")
+end
+
+local count = 0
+
+for _, file in ipairs(data.tree) do
+    if file.type == "blob" then
+        local path = file.path
+
+        if not path:match("^%.git/") then
+            print("Downloading " .. path)
+
+            local ok, result = pcall(function()
+                local res, why = http.get(raw .. path)
+                if not res then
+                    error(tostring(why))
+                end
+
+                local contents = res.readAll()
+                res.close()
+
+                local dir = fs.getDir(path)
+                if dir ~= "" then
+                    fs.makeDir(dir)
+                end
+
+                local out = fs.open(path, "w")
+                if not out then
+                    error("Cannot write " .. path)
+                end
+
+                out.write(contents)
+                out.close()
+            end)
+
+            if ok then
+                count = count + 1
+            else
+                printError("Failed: " .. path .. " - " .. tostring(result))
+            end
+        end
+    end
+end
+
+print("Downloaded " .. count .. " files.")
+print("Check the files before rebooting.")
