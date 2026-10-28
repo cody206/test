@@ -1,0 +1,4 @@
+local r = peripheral.wrap("bottom")
+print("Relay:", r)
+r.setOutput("top", true)
+print("Output:", r.getOutput("top"))
