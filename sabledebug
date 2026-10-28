@@ -1,0 +1,24 @@
+print("CC:Sable API diagnostic")
+
+print("sublevel exists: " .. tostring(sublevel ~= nil))
+
+if sublevel then
+    print("isInPlotGrid: " ..
+        tostring(sublevel.isInPlotGrid))
+
+    local ok, result = pcall(sublevel.isInPlotGrid)
+    print("On ship: " .. tostring(ok and result or result))
+
+    local okName, name = pcall(sublevel.getName)
+    print("Name call succeeded: " .. tostring(okName))
+    print("Name result: " .. tostring(name))
+
+    local okPose, pose = pcall(sublevel.getLogicalPose)
+    print("Pose call succeeded: " .. tostring(okPose))
+
+    if okPose then
+        print(textutils.serialize(pose))
+    else
+        print(tostring(pose))
+    end
+end
