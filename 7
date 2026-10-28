@@ -1,0 +1,17 @@
+
+local relay = peripheral.wrap("bottom")
+
+if not relay then
+    print("Relay not found!")
+    return
+end
+
+print("Turning relay output ON...")
+relay.setOutput("top", true)
+
+sleep(3)
+
+print("Turning relay output OFF...")
+relay.setOutput("top", false)
+
+print("Test finished.")
