@@ -1,0 +1,79 @@
+
+-- sablemonitor.lua
+-- CC:Tweaked + CC:Sable, Minecraft 1.21.1
+
+local monitor = peripheral.find("monitor")
+local output = monitor or term.current()
+
+if monitor then
+    monitor.setTextScale(0.5)
+end
+
+local function draw()
+    output.clear()
+    output.setCursorPos(1, 1)
+end
+
+local function line(label, value)
+    print(label .. tostring(value))
+end
+
+local function callAPI(label, fn)
+    if type(fn) ~= "function" then
+        line(label .. ": ", "NOT AVAILABLE")
+        return nil, false
+    end
+
+    local ok, result = pcall(fn)
+
+    if not ok then
+        line(label .. ": ERROR ", result)
+        return nil, false
+    end
+
+    line(label .. ": ", textutils.serialize(result))
+    return result, true
+end
+
+while true do
+    draw()
+
+    line("CC:Sable DIAGNOSTIC", "")
+    line("Monitor connected: ", monitor ~= nil)
+    line("Computer ID: ", os.getComputerID())
+    line("sublevel API exists: ", type(sublevel) == "table")
+    print("--------------------------------")
+
+    if type(sublevel) == "table" then
+        local onShip, checkOK =
+            callAPI("On sub-level", sublevel.isInPlotGrid)
+
+        if checkOK and onShip == true then
+            print("--------------------------------")
+            callAPI("Ship name", sublevel.getName)
+            callAPI("Ship UUID", sublevel.getUniqueId)
+            callAPI("Mass", sublevel.getMass)
+            callAPI("Logical pose", sublevel.getLogicalPose)
+            callAPI("Last pose", sublevel.getLastPose)
+            callAPI("Velocity", sublevel.getVelocity)
+            callAPI("Linear velocity", sublevel.getLinearVelocity)
+            callAPI("Angular velocity", sublevel.getAngularVelocity)
+            callAPI("Center of mass", sublevel.getCenterOfMass)
+        elseif checkOK then
+            print(" ")
+            print("Computer is NOT on a Sable sub-level.")
+            print("Place it on the moving ship structure.")
+            print("Ship-specific methods were not called.")
+        end
+    else
+        print(" ")
+        print("CC:Sable API not found.")
+        print("Check the mod is installed and loaded.")
+    end
+
+    print(" ")
+    print("Refresh: 1 second")
+    print("Stop: Ctrl+T")
+
+    sleep(1)
+end
