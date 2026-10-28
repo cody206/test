@@ -1,0 +1,53 @@
+
+-- sablemonitor.lua
+local monitor = peripheral.find("monitor")
+
+if not monitor then
+    print("No monitor found!")
+    return
+end
+
+monitor.setTextScale(0.5)
+
+local function show(label, value)
+    monitor.write(label .. tostring(value))
+    monitor.scroll(1)
+end
+
+while true do
+    monitor.clear()
+    monitor.setCursorPos(1, 1)
+
+    show("CC:Sable Diagnostics", "")
+    show("Computer ID: ", os.getComputerID())
+    show("sublevel API: ", type(sublevel))
+
+    if type(sublevel) == "table" then
+        for _, method in ipairs({
+            "isInPlotGrid",
+            "getName",
+            "getUniqueId",
+            "getMass",
+            "getLogicalPose",
+            "getLastPose",
+            "getVelocity",
+            "getLinearVelocity",
+            "getAngularVelocity",
+            "getCenterOfMass"
+        }) do
+            local fn = sublevel[method]
+            if type(fn) == "function" then
+                local ok, result = pcall(fn)
+                show(method .. ": ",
+                    ok and textutils.serialize(result)
+                    or ("ERROR " .. tostring(result)))
+            else
+                show(method .. ": ", "unavailable")
+            end
+        end
+    else
+        show("CC:Sable API not detected", "")
+    end
+
+    sleep(2)
+end
